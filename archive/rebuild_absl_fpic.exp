@@ -1,0 +1,26 @@
+#!/usr/bin/expect -f
+set password "123"
+set host "192.168.64.4"
+set user "jetauto"
+set timeout 3600
+
+set cmd {
+cd ~/jetauto_ws/src/third_party/cartographer/scripts/abseil-cpp/build && \
+cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local -DCMAKE_CXX_STANDARD=11 -DCMAKE_POSITION_INDEPENDENT_CODE=ON && \
+make clean && \
+make -j4 && \
+sudo make install
+}
+
+spawn ssh -t -o StrictHostKeyChecking=no $user@$host $cmd
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "password for jetauto:" {
+        send "$password\r"
+        exp_continue
+    }
+    eof
+}

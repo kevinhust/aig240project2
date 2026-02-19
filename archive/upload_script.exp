@@ -1,0 +1,21 @@
+#!/usr/bin/expect -f
+set password "123"
+set host "192.168.64.4"
+set user "jetauto"
+set key_path "/Users/kevinwang/.ssh/id_rsa_jetauto"
+set local_file "/Users/kevinwang/Documents/Projects/aig240project2/lab4_jetauto_control/scripts/jetauto_square_control.py"
+set remote_file "/home/jetauto/ros_ws/src/lab4_jetauto_control/scripts/jetauto_square_control.py"
+set timeout 60
+
+# Add encoding line to the file first
+spawn /bin/bash -c "sed -i '1a# -*- coding: utf-8 -*-' $local_file"
+expect eof
+
+spawn scp -i $key_path -o StrictHostKeyChecking=no $local_file $user@$host:$remote_file
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    eof
+}

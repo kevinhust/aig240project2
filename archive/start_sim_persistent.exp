@@ -1,0 +1,42 @@
+#!/usr/bin/expect -f
+set password "123"
+set host "192.168.64.4"
+set user "jetauto"
+set key_path "/Users/kevinwang/.ssh/id_rsa_jetauto"
+set timeout 60
+
+set cmd {
+bash -c "
+source /opt/ros/melodic/setup.bash
+source ~/jetauto_ws/devel_isolated/setup.bash
+# Kill any existing ROS stuff
+pkill -9 roscore
+pkill -9 rosmaster
+pkill -9 gzserver
+pkill -9 gzclient
+
+# Start roscore with nohup
+nohup roscore > ~/roscore.log 2>&1 &
+sleep 5
+
+# Start simulation with nohup
+nohup roslaunch jetauto_gazebo worlds.launch gui:=false > ~/gazebo.log 2>&1 &
+sleep 20
+
+# Check if nodes are running
+rosnode list
+"
+}
+
+spawn ssh -t -i $key_path -o StrictHostKeyChecking=no $user@$host $cmd
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "password for jetauto:" {
+        send "$password\r"
+        exp_continue
+    }
+    eof
+}

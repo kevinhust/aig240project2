@@ -1,0 +1,26 @@
+#!/usr/bin/expect -f
+set password "123"
+set host "192.168.64.4"
+set user "jetauto"
+set timeout 1200
+
+set cmd {
+sudo apt install -y unzip && \
+unzip -o ~/jetauto_ws.zip -d ~/ && \
+sudo chmod +x ~/jetauto_ws/devel/_setup_util.py && \
+grep -q "source ~/jetauto_ws/devel/setup.bash" ~/.bashrc || echo "source ~/jetauto_ws/devel/setup.bash" >> ~/.bashrc && \
+/bin/bash -c "source /opt/ros/melodic/setup.bash && cd ~/jetauto_ws && catkin_make"
+}
+
+spawn ssh -t -o StrictHostKeyChecking=no $user@$host $cmd
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "password for jetauto:" {
+        send "$password\r"
+        exp_continue
+    }
+    eof
+}

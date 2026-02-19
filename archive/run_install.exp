@@ -1,0 +1,30 @@
+#!/usr/bin/expect -f
+set password "123"
+set host "192.168.64.4"
+set user "jetauto"
+set timeout 1200
+
+set cmd "sudo apt update && sudo apt install -y gazebo9 libgazebo9-dev ros-melodic-gazebo-dev ros-melodic-gazebo-msgs ros-melodic-gazebo-plugins ros-melodic-gazebo-ros ros-melodic-gazebo-ros-control ros-melodic-gazebo-ros-pkgs ros-melodic-joint-state-publisher ros-melodic-joint-state-publisher-gui ros-melodic-joint-trajectory-controller python-rospkg"
+
+# Use -t to force a TTY for sudo
+spawn ssh -t -o StrictHostKeyChecking=no $user@$host $cmd
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    # Escape brackets to avoid TCL command substitution
+    "\\\[sudo\\\] password for jetauto:" {
+        send "$password\r"
+        exp_continue
+    }
+    "password for jetauto:" {
+        send "$password\r"
+        exp_continue
+    }
+    timeout {
+        puts "Timed out waiting for prompt"
+        exit 1
+    }
+    eof
+}

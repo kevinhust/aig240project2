@@ -340,3 +340,13 @@ lab4_jetauto_control/
 ---
 
 **Good luck with your project!**
+On your Linux VM, run:
+
+  cd ~/ros_ws/src
+  git clone https://github.com/kevinhust/aig240project2.git .
+
+  cd ~/ros_ws
+  catkin_make
+  source devel/setup.bash
+
+  Then follow the running instructions in PROJECT_INSTRUCTIONS.md or the README.

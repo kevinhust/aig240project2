@@ -1,0 +1,32 @@
+#!/usr/bin/expect -f
+set password "123"
+set host "192.168.64.4"
+set user "jetauto"
+set timeout 30
+
+# Commands to update /etc/environment and create workspaces
+set cmd {
+sudo bash -c "cat >> /etc/environment <<EOF
+LIDAR_TYPE=\"A1\"
+DEPTH_CAMERA_TYPE=\"AstraProPlus\"
+MACHINE_TYPE=\"JetAutoPro\"
+HOST=\"/\"
+MASTER=\"/\"
+EOF" && \
+mkdir -p ~/ros_ws/src && \
+cd ~/ros_ws && \
+/bin/bash -c "source /opt/ros/melodic/setup.bash && catkin_make"
+}
+
+spawn ssh -t -o StrictHostKeyChecking=no $user@$host $cmd
+expect {
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    "password for jetauto:" {
+        send "$password\r"
+        exp_continue
+    }
+    eof
+}
