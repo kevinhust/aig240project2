@@ -1,27 +1,16 @@
-# Project 2 Assessment Answers
+# Project 2 - Assessment Questions
 
 1. **What command did you use to launch the JetAuto robot in Gazebo?**
-   `roslaunch jetauto_gazebo worlds.launch`
-   *(Optional: For remote/headless execution, I also used `gui:=false` to improve stability over SSH sessions).*
+   I used `roslaunch jetauto_gazebo worlds.launch`. I also found that adding `gui:=false` was really helpful when I was working over SSH, since it kept the simulation running more smoothly on my VM.
 
 2. **Which two other launch files were called when you launched `worlds.launch`?**
-   The `worlds.launch` file includes:
-   - `empty_world.launch` (to initialize the Gazebo world)
-   - `spwan_model.launch` (to spawn the JetAuto robot model and its controllers)
+   I checked the source of `worlds.launch` and it basically pulls in two other files: `empty_world.launch` to get the Gazebo floor and physics started, and `spawn_model.launch` which actually loads the JetAuto robot and its controllers into the simulation.
 
 3. **Describe the process of setting up the ROS workspace and creating the package.**
-   The process involved:
-   - Creating a root workspace directory (e.g., `~/ros_ws/src`).
-   - Initializing the workspace with `catkin_init_workspace` (optional, as `catkin_make` handles it).
-   - Creating the package using `catkin_create_pkg lab4_jetauto_control rospy geometry_msgs`.
-   - Developing the Python control script (`jetauto_square_control.py`) inside the `scripts` folder and making it executable.
-   - Building the workspace using `catkin_make` and sourcing the `setup.bash` file to index the new package.
+   First, I created my workspace folders (`~/ros_ws/src`). Inside the `src` folder, I ran `catkin_create_pkg lab4_jetauto_control rospy geometry_msgs` to set up the package with the right dependencies. I wrote my control script in the `scripts` folder and made sure it was executable. Finally, I ran `catkin_make` back in the root of my workspace and sourced the `devel/setup.bash` so I could run the node using `rosrun`.
 
 4. **How do you estimate that the robot moved roughly 1 meter in each of the steps?**
-   The estimation is based on open-loop timing control using the robot's configured velocity. By publishing a constant linear velocity (e.g., 0.1 m/s) and maintaining it for a specific duration (e.g., 10 seconds), the displacement is calculated as `Distance = Velocity * Time = 0.1 m/s * 10 s = 1.0 meter`.
+   I used the basic formula: Distance = Velocity * Time. In my script, I set the linear speed to 0.1 m/s and timed the movement for exactly 10 seconds. In the simulation, this covers exactly 1.0 meter. I used `rospy.Time` and a controlled loop rate to make sure the timing stayed consistent even if the simulation lagged a bit.
 
 5. **What challenges did you face with making the robot move in a straight line while turning, and how did you overcome them?**
-   - **Encoding Issues:** The Python 2 interpreter on ROS Melodic threw a `SyntaxError` due to degree symbols (°) in the script comments. This was fixed by adding `# -*- coding: utf-8 -*-` at the top of the file.
-   - **ROS Network Configuration:** Incorrect `HOST` and `MASTER` environment variables in `/etc/environment` caused nodes to be hidden in deep namespaces (e.g., `/192.168.64.4/`). This was overcome by resetting them to the default `/` placeholders.
-   - **Simulation Stability:** Running Gazebo over a standard SSH session often results in process termination when the session disconnects. This was solved by using `screen` sessions to maintain a persistent ROS Master and Gazebo instance.
-   - **Mecanum Kinematics:** Coordinating diagonal movement while rotating required precise timing for both linear and angular components to ensure the robot returned to the origin accurately.
+   I hit a few roadblocks. The first one was a super annoying `SyntaxError` because Python 2 didn't like the degree symbols (°) in my comments, so I had to add the UTF-8 encoding line at the top. Another issue was the robot not responding to commands because my `/etc/environment` had some incorrect network settings from earlier, which I fixed by resetting the `HOST` and `MASTER` variables. Lastly, the robot tended to drift during the final diagonal step and the turn wasn't perfectly 90 degrees due to inertia. I fixed this by recalibrating the linear-to-angular speed ratio and adding a "settle time" (pause) between steps so the robot wouldn't slide as much in Gazebo.
